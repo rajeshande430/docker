@@ -1,0 +1,68 @@
+docker installation on ubuntu
+https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+DOCKER IMAGE BUILD FOR SPRING-PETCLINIC USING 2 METHODS 
+	1.	using ubuntu image from docker hub
+	2.	using java image from docker hub
+	
+---------------------------------------------------------------------------------------------------
+INSTALLING UBUNTU MACHINE && OPENJDK FROM DOCKERHUB && SPRINGPETCLINIC APPLICATION
+---------------------------------------------------------------------------------------------------
+--------------->	https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/spring-petclinic.jar
+--------------->	https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/gameoflife.war
+mkdir docker
+cd docker
+vi dockerfile
+
+			FROM ubuntu
+			RUN apt-get update && apt-get install openjdk-8-jdk
+			ADD https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/spring-petclinic.jar /spring-petclinic.jar
+			EXPOSE 8080
+			CMD ["java", "-jar", "/spring-petclinic.jar"]
+
+			docker image build -t spc:ubuntu1 docker
+			docker image list
+			docker container run --name springpetclinic -p 8081:8080 -d spc:ubuntu1
+										or
+			docker container run --name springpetclinic -P -d spc:ubuntu1
+			docker ps -a
+			docker container list -a
+			docker container exec -it <containerid> <shellterminal-/bin/bash>
+
+-t 	= tag with a name
+-d 	= run in the background
+-p 	= portforwarding to a specific IP address
+-P 	= portforwarding to which ever port is free
+-it = Interactive mode, mostly used to login to the container
+
+	
+---------------------------------------------------------------------------------------------------
+INSTALLING TOMCAT MACHINE && DEPLOYING GAMEOFLIFE APPLICATION
+---------------------------------------------------------------------------------------------------
+mkdir docker
+cd docker
+vi dockerfile
+			FROM tomcat
+			ADD https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/gameoflife.war /gameoflife.war
+			EXPOSE 8080
+			CMD ["cp", "/gameoflife.war", "/usr/local/tomcat/webapps"]
+
+			docker image build -t goflife:tomcat docker
+			docker image list
+			docker container run --name gameoflife -p 8081:8080 -d goflife:tomcat
+										or
+			docker container run --name gameoflife -P -d goflife:tomcat
+			docker ps -a
+			docker container list -a
+			docker container exec -it <containerid> <shellterminal-/bin/bash>
+
+
+
+
+
+FROM tomcat:8.0
+ADD https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/gameoflife.war /gameoflife.war
+EXPOSE 8080
+COPY /gameoflife.war /usr/local/tomcat/webapps/gameoflife.war
+ENTRYPOINT ["catalina.sh"]
+CMD ["run"]
