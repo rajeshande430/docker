@@ -1,3 +1,27 @@
+1.	evolution of containers
+2.	creating tomcat8 Virtual machine vs docker 
+3.	docker run + docker client  + docker deamon - - local registry && remote registry that is docker hub 
+4.	what happens during docker run
+5.	what is inside a docker image
+6.	how to create a docker image through docker file (set of instructions)
+7. 	what are the commands used for docker image
+8.	docker installation | docker group permission
+9.	docker inspect image - to see ROOTFS - layers
+10.	what is inside a docker container
+11.	who creates a writable layers
+12.	storage drivers types
+13.	which storage driver is best | when running toomany instruction ?
+14.	docker file CMD & ENTRYPOINT, when does CMD execute
+15.	CMD can be over written while creating the container ? how
+16.	ENTRYPOINT ?
+17.	How to get inside a docker container ?
+18.	docker container life cycle ? start|stop etc
+
+
+
+
+
+
 docker installation on ubuntu
 https://docs.docker.com/install/linux/docker-ce/ubuntu/
 		sudo apt-get update
