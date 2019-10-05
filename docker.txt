@@ -16,6 +16,20 @@
 16.	ENTRYPOINT ?
 17.	How to get inside a docker container ?
 18.	docker container life cycle ? start|stop etc
+19.	WORKDIR
+20. ENV
+21.	docker container run -e "gol_path=usr/sf/sfss" --name <name> -d <imagename>
+21.	ARG (only used till image build, once image build no use of arg value)
+22.	USER
+23. writable layer, all changes container perform will be on writable layer
+24.	docker volume types | named & Annonomus volumes, how to define them?
+25. docker volumes | -v    (this is managed by docker, the default location is /var/lib/docker/volumes/***)
+26. docer volumes  | --mount (local folder mount & docker host volume mount to container)
+27.	docker volumes | tempfs (RAM)
+28.	how to delete all docker containers using one command 
+29. How to check volume mount point
+30. storing docker volume outside of docker host in aws or azure or nfs, volume driver is needed or docker plugin
+31.	volume drivers
 
 
 
@@ -78,10 +92,10 @@ mkdir docker
 cd docker
 vi dockerfile
 			FROM tomcat
-			ADD https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/gameoflife.war /gameoflife.war
+			LABEL author="Rajesh Ande"
+			ADD https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/gameoflife.war /usr/local/tomcat/webapps/gameoflife.war
 			EXPOSE 8080
-			CMD ["cp", "/gameoflife.war", "/usr/local/tomcat/webapps"]
-								
+											
 			docker image build -t goflife:tomcat docker
 			docker image list
 			docker container run --name gameoflife -p 8081:8080 -d goflife:tomcat
@@ -136,7 +150,83 @@ docker container --help
 
 remove the container 
 docker rm -f <containerid>
+---------------------------------------------------------------------------------------------------
+vi script.sh
+		top
 	
+	FROM alpine
+	COPY script.sh /script.sh
+	CMD ["/script.sh"]
 
+----------------------------------------------------------------------------------------------------
+WORKDIR - 	
+ARG
+ENV
+USER
+				FROM tomcat8:latest
+				ADD https://qt-s3-new-testing.s3-us-west-2.amazonaws.com/gameoflife.war /usr/local/tomcat/webapps/gameoflife.war
+				WORKDIR usr/local/tomcat/webapps/
+				EXPOSE 8080
+				
+DOCKER PERSISTANE VOLUMES				
+---------------------------------------------------------------------------------------------------
+DOCKER VOLUMES - this is managed by docker
 
+docker pull alpine:latest
+docker volume create myvol
+docker inspect myvol
+	cd /var/lib/docker/volumes/myvol
 
+docker container run --name cont1 -v myvol:/myapps -d alpine:latest sleep 1d
+docker container exec cont1 touch /myapps/1.txt
+docker container exec cont1 ls /myapps
+		$ docker container exec cont1 ls /myapps
+		1.txt
+docker container run --name cont2 -v myvol:/myapps -d alpine:latest sleep 1d
+docker container exec cont2 touch /myapps/2.txt
+docker container exec cont2 ls /myapps
+		$ docker container exec cont1 ls /myapps
+		1.txt
+		2.txt
+
+to check the files login in to the container using interactive mode 
+docker container exec cont1 -it /bin/sh
+---------------------------------------------------------------------------------------------------
+DOCKER BIND MOUNT - this is managed by user
+mind mount is nothing but mounting a folder from a docker host to the container
+when we use docker volume create , a folder will create in /var/lib/docer/volume
+
+docker container run --name cont5 --mount 'type=volume,src=myvol,dst=/myapps' -d alpine:latest sleep 1d
+docker container exec cont5 ls /myapps
+docker container exec cont5 touch /myapps/1.txt
+
+mounting local folder to the container 
+mkdir bindmount
+cd bindmount
+pwd
+/root/bindmount
+docker container run --name cont1 -v /root/bindmount:/bindmount -d alpine:latest sleep 1d
+				or
+docker container run --name cont1 --mount 'type=bind,src=/root/bindmount,dst=/bindmount' -d alpine:latest sleep 1d
+---------------------------------------------------------------------------------------------------
+how to delete all docker containers using one command 
+
+docker ps -a -q	- this commane will give you the list of all containers which are running as well as existed state
+docker container rm -f $(docker ps -a -q)
+---------------------------------------------------------------------------------------------------
+How to check volume mount point
+
+[node1] (local) root@192.168.0.53 ~
+$ docker inspect myvol
+[
+    {
+        "CreatedAt": "2019-10-05T10:25:45Z",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/myvol/_data",
+        "Name": "myvol",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+---------------------------------------------------------------------------------------------------
